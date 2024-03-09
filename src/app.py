@@ -39,21 +39,25 @@ def get_members():
 
 @app.route('/member/<int:member_id>', methods=['GET'])
 def get_single_member(member_id):
-    member=jackson_family.get_member(member_id)
-    if member is None:
-        return jsonify({"msg":"Member not found"}),404
-    return jsonify(member),200
+    if member_id >= len(jackson_family.members) or member_id < 0:
+        return jsonify({"msg": "Member not found"}), 404
+    member = jackson_family.members[member_id]
+    return jsonify(member), 200
 
 @app.route('/member', methods=['POST'])
 def add_member():
     json_data = request.get_json()
-    new_member=jackson_family.add_member(json_data)
+    last_name = json_data.get('last_name', '')
+    new_member=jackson_family.add_member(json_data, last_name)
     return jsonify({"msg":"new member succesfully added"}),200
 
-@app.route('/member/<int:member_id>', methods=['DELETE'])
-def delete_member(member_id):
-    jackson_family.delete_member(member_id)
-    return jsonify({"done":True}),200
+@app.route('/delete_user/<int:member_id>', methods=['DELETE'])
+def delete_user(member_id):
+    if member_id >= len(jackson_family.members) or member_id < 0:
+        raise APIException('Member not found', 404)
+    jackson_family.members.pop(member_id)
+    return jsonify({"msg": "User deleted successfully"}), 200
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
